@@ -55,7 +55,7 @@ jobs:
       - uses: actions/upload-artifact@v7
         with:
           name: info/build.txt
-          path: ${{ steps.docker-security.outputs.build_info }}
+          path: ${{ steps.build_info.outputs.build_info }}
 
 
   docker-build:
@@ -77,7 +77,7 @@ jobs:
       - uses: actions/upload-artifact@v7
         with:
           name: info/build.txt
-          path: ${{ steps.docker-security.outputs.build_info }}
+          path: ${{ steps.build_info.outputs.build_info }}
 
       - name: Build and Push Docker Image
         uses: ./.github/actions/build-action
@@ -107,7 +107,7 @@ jobs:
       - uses: actions/upload-artifact@v7
         with:
           name: info/build.txt
-          path: ${{ steps.docker-security.outputs.build_info }}
+          path: ${{ steps.build_info.outputs.build_info }}
 
       - name: Docker Security Scan
         uses: ./.github/actions/security-scan-action
@@ -140,7 +140,7 @@ jobs:
       - uses: actions/upload-artifact@v7
         with:
           name: info/build.txt
-          path: ${{ steps.docker-security.outputs.build_info }}
+          path: ${{ steps.build_info.outputs.build_info }}
 
 
   deployment:
@@ -166,8 +166,7 @@ jobs:
         with:
           application_name: hamza
           environmnet: development
-
       - uses: actions/upload-artifact@v7
         with:
           name: info/build.txt
-          path: ${{ steps.docker-security.outputs.build_info }}
+          path: ${{ steps.build_info.outputs.build_info }}

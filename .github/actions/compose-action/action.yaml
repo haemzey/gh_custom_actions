@@ -49,9 +49,11 @@ runs:
         timeout: "60"
         workdir: ./
       
-    - run: |
-        docker compose up -d
-        docker compose exec server python -m pytest
+    - shell: bash
+      run: docker compose up -d
+      
+    - shell: bash
+      run: docker compose exec server python -m pytest
 
     - name: Compose Logs
       if: ${{ always() }}

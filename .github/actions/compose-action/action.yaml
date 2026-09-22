@@ -48,10 +48,10 @@ runs:
         filename: docker-compose.yaml
         timeout: "60"
         workdir: ./
-
-    run: |
-      docker compose up -d
-      docker compose exec server python -m pytest
+      
+    - run: |
+        docker compose up -d
+        docker compose exec server python -m pytest
 
     - name: Compose Logs
       if: ${{ always() }}

@@ -55,7 +55,6 @@ runs:
         compose-file: ./docker-compose.yaml
         test-container: server
         test-command: python -m pytest
-        annotate: true
 
     - name: Compose Logs
       if: ${{ always() }}

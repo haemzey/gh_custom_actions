@@ -1,0 +1,121 @@
+name: action workflow ci
+
+on:
+  push:
+    branches:
+      - main
+      - feature
+
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+env:
+  IMAGE_NAME: ${{ vars.IMAGE_NAME }}
+
+jobs:
+
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: GitLeaks
+        uses: gitleaks/gitleaks-action@v3
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.14"
+          cache: pip
+          cache-dependency-path: "./requirements.txt"
+
+      - name: Application tests
+        uses: ./.github/actions/app-test
+        with:
+          dependency: requirements.txt
+          pylint: true
+          bandit: true
+          flake8: true
+          pytest: true
+          unittest: true
+
+
+  docker-build:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Build and Push Docker Image
+        uses: ./.github/actions/build-action
+        with:
+          docker_username: ${{ vars.DOCKER_USERNAME }}
+          docker_token: ${{ secrets.DOCKER_TOKEN }}
+          image_name: ${{ env.IMAGE_NAME }}
+          image_tag: ${{ github.sha }}
+
+
+  docker-security:
+    needs: docker-build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Docker Security Scan
+        uses: ./.github/actions/security-scan
+        with:
+          docker_username: ${{ vars.DOCKER_USERNAME }}
+          docker_token: ${{ secrets.DOCKER_TOKEN }}
+          image_name: ${{ env.IMAGE_NAME }}
+          image_tag: ${{ github.sha }}
+
+
+  smoke-test:
+    needs: docker-security
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Smoke Test
+        uses: ./.github/actions/smoke-test
+        with:
+          docker_username: ${{ vars.DOCKER_USERNAME }}
+          docker_token: ${{ secrets.DOCKER_TOKEN }}
+          image_name: ${{ env.IMAGE_NAME }}
+          image_tag: ${{ github.sha }}
+
+
+  deployment:
+    needs: smoke-test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Docker Compose Deployment Test
+        uses: ./.github/actions/compose-action
+        with:
+          docker_username: ${{ vars.DOCKER_USERNAME }}
+          docker_token: ${{ secrets.DOCKER_TOKEN }}
+          image_name: ${{ env.IMAGE_NAME }}
+          image_tag: ${{ github.sha }}

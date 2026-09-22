@@ -1,4 +1,4 @@
-name: action workflow ci
+mame: action workflow ci
 
 on:
   push:
@@ -12,6 +12,7 @@ on:
 
 permissions:
   contents: read
+
 
 jobs:
 
@@ -46,16 +47,19 @@ jobs:
           pytest: true
           unittest: true
 
-      - name: build info
+      - name: Generate build information
+        id: build_info
         uses: ./.github/actions/script-action
         with:
           application_name: hamza
-          environmnet: development
+          environment: development
 
-      - uses: actions/upload-artifact@v7
+      - name: Upload build information
+        uses: actions/upload-artifact@v7
         with:
-          name: info/build.txt
+          name: build-info
           path: ${{ steps.build_info.outputs.build_info }}
+          if-no-files-found: error
 
 
   docker-build:
@@ -68,16 +72,19 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: build info
+      - name: Generate build information
+        id: build_info
         uses: ./.github/actions/script-action
         with:
           application_name: hamza
-          environmnet: development
+          environment: development
 
-      - uses: actions/upload-artifact@v7
+      - name: Upload build information
+        uses: actions/upload-artifact@v7
         with:
-          name: info/build.txt
+          name: build-info
           path: ${{ steps.build_info.outputs.build_info }}
+          if-no-files-found: error
 
       - name: Build and Push Docker Image
         uses: ./.github/actions/build-action
@@ -98,16 +105,19 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: build info
+      - name: Generate build information
+        id: build_info
         uses: ./.github/actions/script-action
         with:
           application_name: hamza
-          environmnet: development
+          environment: development
 
-      - uses: actions/upload-artifact@v7
+      - name: Upload build information
+        uses: actions/upload-artifact@v7
         with:
-          name: info/build.txt
+          name: build-info
           path: ${{ steps.build_info.outputs.build_info }}
+          if-no-files-found: error
 
       - name: Docker Security Scan
         uses: ./.github/actions/security-scan-action
@@ -123,6 +133,20 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Generate build information
+        id: build_info
+        uses: ./.github/actions/script-action
+        with:
+          application_name: hamza
+          environment: development
+
+      - name: Upload build information
+        uses: actions/upload-artifact@v7
+        with:
+          name: build-info
+          path: ${{ steps.build_info.outputs.build_info }}
+          if-no-files-found: error
+
       - name: Smoke Test
         uses: ./.github/actions/smoke-test-action
         with:
@@ -131,20 +155,8 @@ jobs:
           image_name: ${{ vars.IMAGE_NAME }}
           image_tag: ${{ github.sha }}
 
-      - name: build info
-        uses: ./.github/actions/script-action
-        with:
-          application_name: hamza
-          environmnet: development
-
-      - uses: actions/upload-artifact@v7
-        with:
-          name: info/build.txt
-          path: ${{ steps.build_info.outputs.build_info }}
-
-
   deployment:
-    needs: smoke-test 
+    needs: smoke-test
     runs-on: ubuntu-latest
 
     steps:
@@ -153,6 +165,20 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Generate build information
+        id: build_info
+        uses: ./.github/actions/script-action
+        with:
+          application_name: hamza
+          environment: development
+
+      - name: Upload build information
+        uses: actions/upload-artifact@v7
+        with:
+          name: build-info
+          path: ${{ steps.build_info.outputs.build_info }}
+          if-no-files-found: error
+
       - name: Docker Compose Deployment Test
         uses: ./.github/actions/compose-action
         with:
@@ -160,13 +186,3 @@ jobs:
           docker_token: ${{ secrets.DOCKER_TOKEN }}
           image_name: ${{ vars.IMAGE_NAME }}
           image_tag: ${{ github.sha }}
-
-      - name: build info
-        uses: ./.github/actions/script-action
-        with:
-          application_name: hamza
-          environmnet: development
-      - uses: actions/upload-artifact@v7
-        with:
-          name: info/build.txt
-          path: ${{ steps.build_info.outputs.build_info }}

@@ -1,4 +1,4 @@
-mame: action workflow ci
+name: action workflow ci
 
 on:
   push:

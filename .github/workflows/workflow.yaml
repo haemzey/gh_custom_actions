@@ -133,6 +133,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
       - name: Generate build information
         id: build_info
         uses: ./.github/actions/script-action

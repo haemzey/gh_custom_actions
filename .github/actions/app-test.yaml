@@ -1,0 +1,43 @@
+name: Custom BUild Action for CI
+description: custom action to build docker image and push
+
+inputs:
+  dependency:
+    name:
+    required: true
+  bandit: 
+    required: true
+
+  flake8:
+    required: true
+
+  pylint: 
+    required: false
+
+  pytest:
+    required: true
+
+  unittest:
+    required: true
+
+runs: 
+    using: composite
+    steps:
+      - name: install dependency, bandit flake pylint and pytest
+        run: |
+          python -m pip install -r ${{ inputs.dependency }} 
+          python -m pip install ${{ inputs.flake8 }} ${{ inputs.bandit }} ${{ inputs.pylint }} ${{ inputs.pytest }}
+
+      - run: 
+          python -m ${{ inputs.pylint }} $(git ls-files '*.py')
+          python -m ${{ inputs.flake8 }} $(git ls-files '*.py')
+          python -m ${{ inputs.bandit }} -m bandit -r . -s B101
+          python -m ${{ inputs.pytest }} test/py_test.py
+          python -m ${{ inputs.unittest }} unit_test.py  
+
+      - run: python app.py &
+          APP_PID=$!
+      
+      - run: curl --fail http//:localhost:5000 || true
+        
+      - run: kill $APP_PID

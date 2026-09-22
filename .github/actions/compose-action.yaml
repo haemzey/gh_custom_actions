@@ -1,0 +1,49 @@
+name: Custom Compose Action with test for CI
+description: custom action to run docker compose and to test running container
+
+inputs:
+
+  image_name:
+    reuired: true
+
+  image_tage: 
+    required: false
+    default: latest
+
+  docker_username:
+    required: true
+
+  docker_token: 
+    required: true
+
+runs: 
+    using: composite
+    steps:
+      - name: docker login
+        uses: docker/login-action@v4
+        with:
+          username: ${{ vars.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_TOKEN }}
+
+      - run: docker pull ${{ vars.DOCKER_USERNAME }}/${{ inputs.image_name }}:v${{ inputs.image_tag }}
+
+      - name: docker-compose setup
+        uses: hoverkraft-tech/compose-action@b659c744ee9bed25aea2307c017ad849bd104433
+        with:
+          compose-file: "./docker-compose.yaml"
+          services: server
+
+      - name: Check services healthiness
+        uses: thegabriele97/dockercompose-health-action@main
+        with:
+          filename: "docker-compose.yaml"
+          timeout: "60"
+          workdir: "./"
+
+      - name: container test
+        uses: adambirds/docker-compose-action@v1.5.0
+        with:
+          compose-file: "./docker-compose.yaml"
+          test-container: "server"
+          test-command: "python -m pytest"
+          annotate: true

@@ -1,0 +1,34 @@
+name: Custom BUild Action for CI
+description: custom action to build docker image and push
+
+inputs:
+
+  image_name:
+    reuired: true
+
+  image_tag: 
+    required: false
+    default: latest
+
+  docker_username:
+    required: true
+
+  docker_token: 
+    required: true
+
+runs: 
+    using: composite
+    steps:
+      - name: docker login
+        uses: docker/login-action@v4
+        with:
+          username: ${{ vars.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_TOKEN }}
+
+      - name: build push
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          push: true
+          load: true
+          tags: ${{ vars.DOCKER_USERNAME }}/${{ inputs.image_name }}:v${{ inputs.image_tag }}

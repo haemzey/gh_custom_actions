@@ -49,12 +49,9 @@ runs:
         timeout: "60"
         workdir: ./
 
-    - name: Container Tests
-      uses: adambirds/docker-compose-action@v1.5.0
-      with:
-        compose-file: ./docker-compose.yaml
-        test-container: server
-        test-command: python -m pytest
+    run: |
+      docker compose up -d
+      docker compose exec server python -m pytest
 
     - name: Compose Logs
       if: ${{ always() }}

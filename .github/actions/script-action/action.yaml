@@ -3,5 +3,45 @@ name: ScriptAction for on
 description: script to get information of ref, repo, githuv runner, date, etc
 
 inputs:
-  
-  
+  application_name:
+    description: name of application
+    required: true
+
+  environment:
+    description: deployment
+    required: true
+
+outputs:
+  build_info:
+    description: info about build
+    value: info/output.txt
+
+runs:
+  using: composite
+  steps:
+    - name: shell script to generate the build info
+      shell: bash
+      run: |
+
+        set -euo pipefail
+
+        mkdir -p info
+
+        BUILD_TIME=$(date +"%Y-%m-%d-%H-%M-%S")
+
+        cat <<EOF > info/output.txt
+
+        Application : ${{ inputs.application_name }}
+        Environment : ${{ inputs.environment }}
+        Repositry : ${{ github.repository }}
+        Branch      : ${{ github.ref_name }}
+        Commit SHA  : ${{ github.sha }}
+        Run Number  : ${{ github.run_number }}
+        Workflow    : ${{ github.workflow }}
+        Triggered By: ${{ github.actor }}
+        Build Time  : ${BUILD_TIME}
+        EOF
+
+        echo "=====BUILD INFO====="
+
+        cat info/output.txt

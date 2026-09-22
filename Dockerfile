@@ -1,0 +1,46 @@
+FROM python:3.14.7-slim AS builder 
+
+WORKDIR /myapp
+
+RUN apt-get update && apt-get install -y --no-install-recommends gcc \
+&& rm -rf /var/lib/apt/lists/*
+
+COPY requirements.txt .
+
+RUN python -m pip install --upgrade pip \
+&& python -m pip install --upgrade \
+msgpack>=1.2.1 \
+setuptools>=78.1.1 \
+&& python -m pip install \
+--prefix=/install \
+--no-cache-dir -r \
+requirements.txt
+
+FROM python:3.14.7-slim AS runtime
+
+RUN groupadd --system \
+--gid 1001 appuser \
+&& useradd --system \
+--uid 1001 \
+--gid appuser appuser
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+PYTHONUNBUFFERED=1\
+PATH="/usr/local/bin:$PATH"
+
+RUN apt-get update && apt-get install -y --only-upgrade perl-base \
+&& rm -rf /var/lib/apt/lists/*
+
+COPY --from=builder /install /usr/local
+
+COPY --chown=root:root --chmod=0444 app.py .
+
+COPY --chown=root:root --chmod=0444 test/ /test
+
+COPY --chown=root:root --chmod=0444 unit_test.py .
+
+EXPOSE 5000
+
+USER appuser
+
+CMD ["gunicorn","--bind","0.0.0.0:5000","app:app"]

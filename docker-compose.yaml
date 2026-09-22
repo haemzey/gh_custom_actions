@@ -1,0 +1,21 @@
+services:
+  server:
+    image: mydummy
+    build:
+      context: .
+    container_name: dummy
+    ports:
+      - "5000:5000"
+    networks:
+      - mynetworks
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http:localhost:5000/health')"]
+      interval: 1m30s
+      timeout: 30s
+      retries: 5
+      start_period: 30s
+
+networks:
+  mynetworks:
+    driver: bridge
+      

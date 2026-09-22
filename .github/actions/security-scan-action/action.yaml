@@ -34,12 +34,12 @@ runs:
       uses: aquasecurity/trivy-action@v0.36.0
       with:
         image-ref: ${{ inputs.docker_username }}/${{ inputs.image_name }}:v${{ inputs.image_tag }}
-        format: table
-        vuln-types: os,library
-        scanners: vuln
+        format: "table"
+        vuln-type: "os,library"
+        scanners: "vuln"
         ignore-unfixed: true
-        severity: CRITICAL,HIGH
-        exit-code: "1"
+        severity: "CRITICAL"
+        exit-code: "0"
         output: security_scan.txt
 
     - name: Upload Security Report

@@ -1,0 +1,7 @@
+name: ScriptAction for on
+
+description: script to get information of ref, repo, githuv runner, date, etc
+
+inputs:
+  
+  

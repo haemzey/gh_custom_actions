@@ -13,9 +13,6 @@ on:
 permissions:
   contents: read
 
-env:
-  IMAGE_NAME: ${{ vars.IMAGE_NAME }}
-
 jobs:
 
   build:
@@ -40,7 +37,7 @@ jobs:
           cache-dependency-path: "./requirements.txt"
 
       - name: Application tests
-        uses: ./.github/actions/app-test
+        uses: ./.github/actions/app-test.yaml
         with:
           dependency: requirements.txt
           pylint: true
@@ -61,11 +58,11 @@ jobs:
           fetch-depth: 0
 
       - name: Build and Push Docker Image
-        uses: ./.github/actions/build-action
+        uses: ./.github/actions/build-action.yaml
         with:
           docker_username: ${{ vars.DOCKER_USERNAME }}
           docker_token: ${{ secrets.DOCKER_TOKEN }}
-          image_name: ${{ env.IMAGE_NAME }}
+          image_name: ${{ vars.IMAGE_NAME }}
           image_tag: ${{ github.sha }}
 
 
@@ -80,11 +77,11 @@ jobs:
           fetch-depth: 0
 
       - name: Docker Security Scan
-        uses: ./.github/actions/security-scan
+        uses: ./.github/actions/security-scan.yaml
         with:
           docker_username: ${{ vars.DOCKER_USERNAME }}
           docker_token: ${{ secrets.DOCKER_TOKEN }}
-          image_name: ${{ env.IMAGE_NAME }}
+          image_name: ${{ vars.IMAGE_NAME }}
           image_tag: ${{ github.sha }}
 
 
@@ -94,11 +91,11 @@ jobs:
 
     steps:
       - name: Smoke Test
-        uses: ./.github/actions/smoke-test
+        uses: ./.github/actions/smoke-test,yaml
         with:
           docker_username: ${{ vars.DOCKER_USERNAME }}
           docker_token: ${{ secrets.DOCKER_TOKEN }}
-          image_name: ${{ env.IMAGE_NAME }}
+          image_name: ${{ vars.IMAGE_NAME }}
           image_tag: ${{ github.sha }}
 
 
@@ -113,9 +110,9 @@ jobs:
           fetch-depth: 0
 
       - name: Docker Compose Deployment Test
-        uses: ./.github/actions/compose-action
+        uses: ./.github/actions/compose-action.yaml
         with:
           docker_username: ${{ vars.DOCKER_USERNAME }}
           docker_token: ${{ secrets.DOCKER_TOKEN }}
-          image_name: ${{ env.IMAGE_NAME }}
+          image_name: ${{ vars.IMAGE_NAME }}
           image_tag: ${{ github.sha }}

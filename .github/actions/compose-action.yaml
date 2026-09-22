@@ -61,4 +61,4 @@ runs:
       if: ${{ always() }}
       shell: bash
       run: |
-        docker compose -f docker-compose.yaml logs
+        docker compose -f docker-compose.yaml logsgit remotr 

@@ -116,4 +116,6 @@ jobs:
           docker_token: ${{ secrets.DOCKER_TOKEN }}
           image_name: ${{ vars.IMAGE_NAME }}
           image_tag: ${{ github.sha }}
+
+
           
